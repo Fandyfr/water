@@ -1,0 +1,44 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #f1f1f1;
+}
+
+h1 {
+    margin: 0.5em 0;
+    font-size: 2em;
+    color: #000000;
+}
+
+h5 {
+    margin: 0.5em 0;
+    font-size: 1em;
+    background: linear-gradient(270deg, #13e21d, #10aae7, #ae1ee7);
+    background-size: 600% 600%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradasi 10s ease infinite;
+}
+
+@keyframes gradasi {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
