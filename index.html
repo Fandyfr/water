@@ -10,7 +10,8 @@
     <link rel="audio" href="assets/audio/background.mp3">
     <link rel="lyrics" href="assets/lyrics/heartbeat.lrc">
 </head>
-<body loadLyrics()>
+<body>
+    <audio id="bg-audio" src="/assets/audio/backgrounds.mp3" autoplay loop></audio>
     <!-- Loading -->
     <div class="loaders">
         <center>
@@ -19,7 +20,6 @@
         </center>
     </div>
     <main class="tersembunyi">
-        <audio id="bg-audio" src="assets/audio/backgrounds.mp3" autoplay loop></audio>
         <!-- Lyrics Animate -->
         <main class="tersembunyi">
             <div class="lyrics" id="lyrics-container"></div>
@@ -46,7 +46,7 @@ window.addEventListener('load', () => {
 });
 
 function loadLyrics() {
-    fetch('assets/lyrics/heartbeat.lrc')
+    fetch('/assets/lyrics/heartbeat.lrc')
         .then(response => response.text())
         .then(text => {
             const lines = text.split('\n');
@@ -60,7 +60,6 @@ function loadLyrics() {
                     const minutes = parseInt(match[1]);
                     const seconds = parseInt(match[2]);
                     const milliseconds = parseInt(match[3].padEnd(3, '0'));
-                    // Kurangi 2 detik dari waktu aslinya
                     const time = ((minutes * 60 + seconds) * 1000 + milliseconds) + 1450;
                     const text = match[4];
                     lyrics.push({ time, text });
@@ -70,11 +69,8 @@ function loadLyrics() {
             audio.addEventListener('timeupdate', () => {
                 const currentTime = audio.currentTime * 1000;
 
-                // Cari lirik yang sesuai dengan waktu saat ini
                 for (let i = 0; i < lyrics.length; i++) {
                     if (currentTime >= lyrics[i].time && (i === lyrics.length - 1 || currentTime < lyrics[i + 1].time)) {
-                        // Jika waktu saat ini berada di antara waktu lirik saat ini dan berikutnya,
-                        // tampilkan lirik tersebut
                         lyricsContainer.innerHTML = lyrics[i].text;
                         break;
                     }
