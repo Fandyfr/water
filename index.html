@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Web ini hanya ditampilkan Saat Pelaksanaan Ujian Online">
-    <title>Web Tersembunyi</title>
+    <meta name="description" content="YOASOBI - Heartbeat Lyrics By FandyFr">
+    <title>YOASOBI - Heartbeat</title>
     <link rel="shortcut icon" href="https://github.com/Fandyfr/fandyfr.github.io/blob/main/assets/img/avatar.png?raw=true" type="image/x-icon">
     <link rel="stylesheet" href="styles/style.css">
 </head>
-<body>
+<body loadLyrics()>
     <!-- Loading -->
     <div class="loaders">
         <center>
@@ -17,10 +17,11 @@
         </center>
     </div>
     <main class="tersembunyi">
-        <center>
-            <h1>:)</h1>
-            <h1>Semangat Remidi Nya !!</h1>
-        </center>
+        <audio id="bg-audio" src="assets/audio/background.mp3" autoplay loop></audio>
+        <!-- Lyrics Animate -->
+        <main class="tersembunyi">
+            <div class="lyrics" id="lyrics-container"></div>
+        </main>
     </main>
     <footer class="tersembunyi">
         <center>
@@ -30,16 +31,57 @@
 
     <script type="module" src="https://cdn.jsdelivr.net/npm/ldrs/dist/auto/cardio.js"></script>
     <script>
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.querySelector('.loaders').classList.add('fade-out');
-                setTimeout(() => {
-                    document.querySelector('.loaders').classList.add('hidden');
-                    document.querySelector('main').classList.add('fade-in');
-                    document.querySelector('footer').classList.add('fade-in');
-                }, 1200);
-            }, 5300);
-        });
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        document.querySelector('.loaders').classList.add('fade-out');
+        setTimeout(() => {
+            document.querySelector('.loaders').classList.add('hidden');
+            document.querySelector('main').classList.add('fade-in');
+            document.querySelector('footer').classList.add('fade-in');
+            loadLyrics()
+        }, 1200);
+    }, 5300);
+});
+
+function loadLyrics() {
+    fetch('assets/lyrics/heartbeat.lrc')
+        .then(response => response.text())
+        .then(text => {
+            const lines = text.split('\n');
+            const lyricsContainer = document.getElementById('lyrics-container');
+            const audio = document.getElementById('bg-audio');
+            const lyrics = [];
+
+            lines.forEach(line => {
+                const match = line.match(/\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/);
+                if (match) {
+                    const minutes = parseInt(match[1]);
+                    const seconds = parseInt(match[2]);
+                    const milliseconds = parseInt(match[3].padEnd(3, '0'));
+                    // Kurangi 2 detik dari waktu aslinya
+                    const time = ((minutes * 60 + seconds) * 1000 + milliseconds) + 1450;
+                    const text = match[4];
+                    lyrics.push({ time, text });
+                }
+            });
+
+            audio.addEventListener('timeupdate', () => {
+                const currentTime = audio.currentTime * 1000;
+
+                // Cari lirik yang sesuai dengan waktu saat ini
+                for (let i = 0; i < lyrics.length; i++) {
+                    if (currentTime >= lyrics[i].time && (i === lyrics.length - 1 || currentTime < lyrics[i + 1].time)) {
+                        // Jika waktu saat ini berada di antara waktu lirik saat ini dan berikutnya,
+                        // tampilkan lirik tersebut
+                        lyricsContainer.innerHTML = lyrics[i].text;
+                        break;
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error loading lyrics:', error));
+}
+
     </script>
 </body>
 </html>
