@@ -20,6 +20,10 @@ html, body {
     z-index: 1000;
 }
 
+audio {
+ display: none;
+}
+
 .loaders p {
     font-family: 'Nunito', monospace;
     color: white;
