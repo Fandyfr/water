@@ -85,6 +85,12 @@ h5 {
     animation: gradasi 10s ease infinite;
 }
 
+/* Lyrics Color */
+
+#romaji-lyrics {
+    color: rgb(235, 118, 23);
+}
+
 @keyframes gradasi {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }

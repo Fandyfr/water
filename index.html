@@ -7,11 +7,9 @@
     <title>YOASOBI - Heartbeat</title>
     <link rel="shortcut icon" href="https://github.com/Fandyfr/fandyfr.github.io/blob/main/assets/img/avatar.png?raw=true" type="image/x-icon">
     <link rel="stylesheet" href="styles/style.css">
-    <link rel="audio" href="assets/audio/background.mp3">
-    <link rel="lyrics" href="assets/lyrics/heartbeat.lrc">
 </head>
 <body>
-    <audio id="bg-audio" src="/assets/audio/backgrounds.mp3" autoplay loop></audio>
+    <audio id="bg-audio" autoplay loop hidden>  <source src="/assets/audio/background.mp3" type="audio/mpeg"></audio>    
     <!-- Loading -->
     <div class="loaders">
         <center>
@@ -22,7 +20,11 @@
     <main class="tersembunyi">
         <!-- Lyrics Animate -->
         <main class="tersembunyi">
-            <div class="lyrics" id="lyrics-container"></div>
+            <div class="lyrics-container">
+                <div id="japanese-lyrics" class="lyrics"></div>
+                <div id="romaji-lyrics" class="lyrics"></div>
+                <div id="indonesian-lyrics" class="lyrics"></div>
+            </div>
         </main>
     </main>
     <footer class="tersembunyi">
@@ -38,48 +40,95 @@ window.addEventListener('load', () => {
         document.querySelector('.loaders').classList.add('fade-out');
         setTimeout(() => {
             document.querySelector('.loaders').classList.add('hidden');
+            loadLyrics()
             document.querySelector('main').classList.add('fade-in');
             document.querySelector('footer').classList.add('fade-in');
-            loadLyrics()
         }, 1200);
     }, 5300);
 });
 
 function loadLyrics() {
-    fetch('/assets/lyrics/heartbeat.lrc')
-        .then(response => response.text())
-        .then(text => {
-            const lines = text.split('\n');
-            const lyricsContainer = document.getElementById('lyrics-container');
-            const audio = document.getElementById('bg-audio');
-            const lyrics = [];
+            fetch('assets/audio/background.mp3')
+                .then(() => {
+                    const audio = document.getElementById('bg-audio');
+                    audio.src = 'assets/audio/background.mp3';
+                });
 
-            lines.forEach(line => {
-                const match = line.match(/\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/);
-                if (match) {
-                    const minutes = parseInt(match[1]);
-                    const seconds = parseInt(match[2]);
-                    const milliseconds = parseInt(match[3].padEnd(3, '0'));
-                    const time = ((minutes * 60 + seconds) * 1000 + milliseconds) + 1450;
-                    const text = match[4];
-                    lyrics.push({ time, text });
-                }
-            });
+            Promise.all([
+                fetch('assets/lyrics/heartbeat.lrc').then(response => response.text()),
+                fetch('assets/lyrics/romaji.lrc').then(response => response.text()),
+                fetch('assets/lyrics/indonesian.lrc').then(response => response.text())
+            ]).then(([japaneseText, romajiText, indonesianText]) => {
+                const japaneseLines = japaneseText.split('\n');
+                const romajiLines = romajiText.split('\n');
+                const indonesianLines = indonesianText.split('\n');
+                const japaneseContainer = document.getElementById('japanese-lyrics');
+                const romajiContainer = document.getElementById('romaji-lyrics');
+                const indonesianContainer = document.getElementById('indonesian-lyrics');
+                const audio = document.getElementById('bg-audio');
 
-            audio.addEventListener('timeupdate', () => {
-                const currentTime = audio.currentTime * 1000;
+                // Parse lyrics and sync timestamps
+                const parseLyrics = (lines) => {
+                    return lines.map(line => {
+                        const match = line.match(/\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/);
+                        if (match) {
+                            const minutes = parseInt(match[1]);
+                            const seconds = parseInt(match[2]);
+                            const milliseconds = parseInt(match[3].padEnd(3, '0'));
+                            const time = (minutes * 60 + seconds) * 1000 + milliseconds;
+                            const text = match[4];
+                            return { time, text };
+                        }
+                        return null;
+                    }).filter(line => line);
+                };
 
-                for (let i = 0; i < lyrics.length; i++) {
-                    if (currentTime >= lyrics[i].time && (i === lyrics.length - 1 || currentTime < lyrics[i + 1].time)) {
-                        lyricsContainer.innerHTML = lyrics[i].text;
-                        break;
+                const japaneseLyrics = parseLyrics(japaneseLines);
+                const romajiLyrics = parseLyrics(romajiLines);
+                const indonesianLyrics = parseLyrics(indonesianLines);
+
+                let currentJapaneseIndex = -1;
+                let currentRomajiIndex = -1;
+                let currentIndonesianIndex = -1;
+
+                audio.addEventListener('timeupdate', () => {
+                    const currentTime = audio.currentTime * 1000;
+
+                    // Update Japanese lyrics
+                    for (let i = 0; i < japaneseLyrics.length; i++) {
+                        if (currentTime >= japaneseLyrics[i].time && (i === japaneseLyrics.length - 1 || currentTime < japaneseLyrics[i + 1].time)) {
+                            if (i !== currentJapaneseIndex) {
+                                currentJapaneseIndex = i;
+                                japaneseContainer.innerHTML = japaneseLyrics[i].text;
+                            }
+                            break;
+                        }
                     }
-                }
-            });
-        })
-        .catch(error => console.error('Error loading lyrics:', error));
-}
 
+                    // Update Romaji lyrics
+                    for (let i = 0; i < romajiLyrics.length; i++) {
+                        if (currentTime >= romajiLyrics[i].time && (i === romajiLyrics.length - 1 || currentTime < romajiLyrics[i + 1].time)) {
+                            if (i !== currentRomajiIndex) {
+                                currentRomajiIndex = i;
+                                romajiContainer.innerHTML = romajiLyrics[i].text;
+                            }
+                            break;
+                        }
+                    }
+
+                    // Update Indonesian lyrics
+                    for (let i = 0; i < indonesianLyrics.length; i++) {
+                        if (currentTime >= indonesianLyrics[i].time && (i === indonesianLyrics.length - 1 || currentTime < indonesianLyrics[i + 1].time)) {
+                            if (i !== currentIndonesianIndex) {
+                                currentIndonesianIndex = i;
+                                indonesianContainer.innerHTML = indonesianLyrics[i].text;
+                            }
+                            break;
+                        }
+                    }
+                });
+            });
+        }
     </script>
 </body>
 </html>
